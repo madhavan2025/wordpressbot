@@ -57,7 +57,7 @@ useEffect(() => {
 
 if (loadingTheme) return null;
   // 🚫 DO NOT render floating launcher inside iframe
-  if (isEmbed) return null;
+  if (isEmbed) {
 
   return (
     <div
@@ -187,4 +187,4 @@ if (loadingTheme) return null;
 )}
     </div>
   );
-};
+};}
