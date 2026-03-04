@@ -7,7 +7,7 @@ export function EmbedChatHeader() {
 
   return (
     <div className="h-14 bg-[#6FA8E8] text-white flex items-center justify-between px-4 shrink-0">
-      <span className="font-semibold">Chatbot</span>
+        <span className="font-semibold">Sykalab-AI-ShopAgent</span>
       <button
         onClick={closeChat}
         className="text-white text-xl leading-none hover:opacity-80"

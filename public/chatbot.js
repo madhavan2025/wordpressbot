@@ -1,39 +1,89 @@
+
 (function () {
-  function loadChatbot() {
-    if (!document.body) {
-      setTimeout(loadChatbot, 50);
-      return;
+  let isOpen = false;
+
+  // Button
+  const button = document.createElement("button");
+button.innerHTML = `
+    <img
+      src="https://sykasysbot.vercel.app/images/chat.png"
+      alt="Chat"
+      style="width:60px;height:60px;object-fit:contain;"
+    />
+  `;
+  Object.assign(button.style, {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    background: "transparent",
+    border: "none",
+     padding: "0",
+    cursor: "pointer",
+    zIndex: "9999",
+    boxShadow: "0 5px 15px rgba(0,0,0,.2)"
+  });
+  document.body.appendChild(button);
+
+  // Iframe (lazy src)
+  const iframe = document.createElement("iframe");
+  Object.assign(iframe.style, {
+    position: "fixed",
+    bottom: "90px",
+    right: "20px",
+    width: "380px",
+    height: "600px",
+    maxWidth: "90vw",
+    maxHeight: "80vh",
+    border: "none",
+    borderRadius: "12px",
+    boxShadow: "0 10px 30px rgba(0,0,0,.2)",
+    display: "none",
+    zIndex: "9999",
+    background: "#fff"
+  });
+  iframe.allow = "clipboard-write; microphone";
+  document.body.appendChild(iframe);
+
+  const openChat = () => {
+    if (!iframe.src) {
+      iframe.src = "https://sykasysbot.vercel.app//?embed=true";
     }
+    iframe.style.display = "block";
+    isOpen = true;
+  };
 
-    var iframe = document.createElement("iframe");
-    iframe.src = "https://sykasysbot.vercel.app/widget"; // IMPORTANT: widget route
+  const closeChat = () => {
+    iframe.style.display = "none";
+    isOpen = false;
+  };
 
-    iframe.id = "syka-chatbot";
-    iframe.style.position = "fixed";
-    iframe.style.bottom = "20px";
-    iframe.style.right = "20px";
-    iframe.style.width = "60px";
-    iframe.style.height = "60px";
-    iframe.style.border = "none";
-    iframe.style.zIndex = "999999";
+  window.addEventListener("message", (event) => {
+    if (event.data === "closeChat") {
+      closeChat();
+    }
+  });
 
-    document.body.appendChild(iframe);
+  button.onclick = () => {
+    isOpen ? closeChat() : openChat();
+  };
 
-    // Listen for open/close messages from iframe
-    window.addEventListener("message", function (event) {
-      if (event.data === "CHAT_OPEN") {
-        iframe.style.width = "350px";
-        iframe.style.height = "500px";
-        iframe.style.borderRadius = "10px";
-      }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isOpen) {
+      closeChat();
+    }
+  });
 
-      if (event.data === "CHAT_CLOSE") {
-        iframe.style.width = "60px";
-        iframe.style.height = "60px";
-        iframe.style.borderRadius = "50%";
-      }
-    });
-  }
-
-  loadChatbot();
+  const resizeIframe = () => {
+    if (window.innerWidth < 400) {
+      iframe.style.width = "90vw";
+      iframe.style.height = "70vh";
+    } else {
+      iframe.style.height = "600px";
+    }
+  };
+  window.addEventListener("resize", resizeIframe);
+  resizeIframe();
 })();
