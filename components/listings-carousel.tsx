@@ -41,9 +41,20 @@ export function ListingsCarousel({
   .map((_, i) => products[(index + i) % total])
   .filter(Boolean);
 
-useEffect(() => {
+  useEffect(() => {
   const checkMobile = () => {
-    setIsMobile(window.screen.width < 640);// Tailwind sm breakpoint
+    let width = window.screen.width;
+
+    // if running inside iframe use parent width
+    if (window.parent && window.parent !== window) {
+      try {
+        width = window.parent.innerWidth;
+      } catch (e) {
+        width = window.innerWidth;
+      }
+    }
+
+    setIsMobile(width < 640);
   };
 
   checkMobile();
