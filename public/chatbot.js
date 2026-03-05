@@ -143,7 +143,12 @@ if (w <= 640) {
   } else {
     applyWidgetSize();
   }
-}
+}setTimeout(() => {
+    iframe.contentWindow?.postMessage(
+      { type: "parentExpandState", value: isExpanded },
+      "*"
+    );
+  }, 200);
   };
 
   const closeChat = () => {
@@ -174,6 +179,10 @@ if (w <= 640) {
   overlay.style.display = "none";
   button.style.display = "block";
 }
+iframe.contentWindow?.postMessage(
+    { type: "parentExpandState", value: isExpanded },
+    "*"
+  );
 }
 
   });
