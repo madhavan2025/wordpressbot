@@ -21,7 +21,7 @@ export function EmbedChatHeader() {
   };
 
   return (
-    <div className="h-14 bg-[#6FA8E8] text-white flex items-center justify-between px-4 shrink-0">
+    <div className="h-14 bg-[#1d4ed8] dark:bg-[#111827] text-white flex items-center justify-between px-4 shrink-0">
       <span className="font-semibold">Sykalab-AI-ShopAgent</span>
 
       <div className="flex items-center gap-3">

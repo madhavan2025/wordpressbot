@@ -25,7 +25,7 @@
     padding: "0",
     cursor: "pointer",
     zIndex: "9999",
-    boxShadow: "0 5px 15px rgba(0,0,0,.2)"
+   
   });
 
   document.body.appendChild(button);
@@ -55,20 +55,41 @@
   document.body.appendChild(iframe);
 
   function applyWidgetSize() {
-    iframe.style.width = "380px";
-    iframe.style.height = "600px";
-    iframe.style.bottom = "90px";
-    iframe.style.right = "20px";
-    iframe.style.borderRadius = "12px";
-  }
+
+  iframe.style.transform = "none";
+
+  iframe.style.width = "380px";
+  iframe.style.height = "600px";
+  iframe.style.bottom = "90px";
+  iframe.style.right = "20px";
+  iframe.style.borderRadius = "12px";
+
+}
 
   function applyFullScreen() {
+
+  const w = window.innerWidth;
+
+  // MOBILE
+  if (w <= 640) {
     iframe.style.width = "100vw";
     iframe.style.height = "100vh";
     iframe.style.bottom = "0";
     iframe.style.right = "0";
     iframe.style.borderRadius = "0";
   }
+
+  // TABLET / DESKTOP
+  else {
+    iframe.style.width = "min(1100px, 95vw)";
+    iframe.style.height = "min(95vh, 900px)";
+    iframe.style.bottom = "50%";
+    iframe.style.right = "50%";
+    iframe.style.transform = "translate(50%, 50%)";
+    iframe.style.borderRadius = "12px";
+  }
+
+}
 
   const openChat = () => {
     if (!iframe.src) {
@@ -79,12 +100,11 @@
     isOpen = true;
 
     // MOBILE DEFAULT FULLSCREEN
-    if (isMobile()) {
-      applyFullScreen();
-      isExpanded = true;
-    } else {
-      applyWidgetSize();
-    }
+   if (isExpanded) {
+  applyFullScreen();
+} else {
+  applyWidgetSize();
+}
   };
 
   const closeChat = () => {
