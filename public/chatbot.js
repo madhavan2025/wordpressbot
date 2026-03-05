@@ -113,7 +113,7 @@ function applyFullScreen() {
 
   // DESKTOP / TABLET
   else {
-    iframe.style.width = "min(1200px,95vw)";
+    iframe.style.width = "min(1250px,95vw)";
     iframe.style.height = "97vh";
     iframe.style.bottom = "45%";
     iframe.style.right = "50%";
