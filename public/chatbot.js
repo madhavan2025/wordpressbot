@@ -104,15 +104,18 @@ iframe.style.bottom = "0";
 iframe.style.right = "0";
 iframe.style.left = "0";
 iframe.style.top = "0";
+ iframe.style.transform = "none";
   }
 
   // DESKTOP / TABLET
   else {
-    iframe.style.width = "min(1200px,95vw)";
-    iframe.style.height = "97vh";
+    iframe.style.width = "min(1100px,95vw)";
+    iframe.style.height = "90vh";
     iframe.style.bottom = "50%";
     iframe.style.right = "50%";
-    iframe.style.transform = "translate(50%,50%)";
+    iframe.style.bottom = "auto";
+    iframe.style.right = "auto";
+    iframe.style.transform = "translate(-50%, -50%)";
     iframe.style.borderRadius = "12px";
   }
 
@@ -122,7 +125,6 @@ iframe.style.top = "0";
     if (!iframe.src) {
       iframe.src = "https://chatbot-woad-six.vercel.app/?embed=true";
     }
-
     iframe.style.display = "block";
     isOpen = true;
 
