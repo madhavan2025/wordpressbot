@@ -27,19 +27,9 @@ export function ListingsCarousel({
   const [cartItems, setCartItems] = useState<Record<string, boolean>>({});
   const total = products.length;
   const [isMobile, setIsMobile] = useState(false);
-    useEffect(() => {
+  useEffect(() => {
   const checkMobile = () => {
-    let width = window.innerWidth;
-
-    // if running inside iframe use parent width
-    if (window.parent && window.parent !== window) {
-      try {
-        width = window.parent.innerWidth;
-      } catch (e) {
-        width = window.innerWidth;
-      }
-    }
-
+    const width = window.innerWidth; // iframe width
     setIsMobile(width < 640);
   };
 
@@ -48,7 +38,6 @@ export function ListingsCarousel({
 
   return () => window.removeEventListener("resize", checkMobile);
 }, []);
-
   const [loading, setLoading] = useState(true);
   const visibleCount = isMobile
   ? 1
