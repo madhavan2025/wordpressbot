@@ -39,12 +39,10 @@ export function ListingsCarousel({
   return () => window.removeEventListener("resize", checkMobile);
 }, []);
   const [loading, setLoading] = useState(true);
-  const visibleCount = isMobile
+ const visibleCount = isMobile
   ? 1
-  : isExpanded
-  ? 3
   : style === "type2"
-  ? 2
+  ? (isExpanded ? 3 : 2)
   : 1;
   const next = () => setIndex((i) => (i + visibleCount) % total);
   const prev = () => setIndex((i) => (i - visibleCount + total) % total);
@@ -73,7 +71,7 @@ async function fetchCart() {
 
  useEffect(() => {
   setIndex(0);
-}, [style, isExpanded]);
+}, [style, isExpanded,isMobile]);
 
  
 
