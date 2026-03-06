@@ -30,11 +30,18 @@
     document.body.appendChild(iframe);
     iframe.onload = () => {
   iframe.contentWindow?.postMessage(
-    { type: "parentExpandState", value: isExpanded },
-    "*"
-  );
+  {
+    type: "parentExpandState",
+    value: isExpanded,
+    screenWidth: window.innerWidth
+  },
+  "*"
+);
 };
 
+iframe.onload = () => {
+    sendState();
+  };
 
     const overlay = document.createElement("div");
 
@@ -149,10 +156,7 @@ if (w <= 640) {
   } else {
     applyWidgetSize();
   }
-} iframe.contentWindow?.postMessage(
-    { type: "parentExpandState", value: isExpanded },
-    "*"
-  );
+} sendState();
   };
 
   const closeChat = () => {
@@ -161,6 +165,7 @@ if (w <= 640) {
   button.style.display = "block";
   isOpen = false;
   isExpanded = false;
+  sendState();
 };
 
 
@@ -183,10 +188,7 @@ if (w <= 640) {
   overlay.style.display = "none";
   button.style.display = "block";
 }
-iframe.contentWindow?.postMessage(
-    { type: "parentExpandState", value: isExpanded },
-    "*"
-  );
+sendState();
 }
 
   });
@@ -211,6 +213,7 @@ iframe.contentWindow?.postMessage(
   } else {
     applyWidgetSize();
   }
+  sendState();
 
 });
 
