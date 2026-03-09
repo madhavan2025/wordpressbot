@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Listing = {
-  _id: string;
+  id:number;
   title: string;
   price: string;
   image: string;
@@ -25,11 +25,13 @@ export function ListingsCarousel({
   const [index, setIndex] = useState(0);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
   const [justAdded, setJustAdded] = useState<Record<string, boolean>>({});
-  const [products, setProducts] = useState<any[]>([]);
+ const [products, setProducts] = useState<Listing[]>([]);
   const [cartItems, setCartItems] = useState<Record<string, boolean>>({});
   const total = products.length;
   const [loading, setLoading] = useState(true);
    const isMobile = (parentWidth ?? 1024) < 640;
+    const token = process.env.NEXT_PUBLIC_WP_TOKEN;
+   const API = process.env.NEXT_PUBLIC_WP_API;
    const visibleCount = (() => {
   // MOBILE ALWAYS 1
   if (isMobile) return 1;
@@ -51,22 +53,46 @@ export function ListingsCarousel({
 
 
   async function getProducts() {
-  const res = await fetch("/api/products");
-  if (!res.ok) throw new Error("Failed to fetch products");
-  return res.json();
+  const res = await fetch(`${API}/wp-json/wp/v2/product`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+       "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+     console.error(await res.text());
+    throw new Error("Failed to fetch products");
+  }
+ 
+  const data = await res.json();
+  return data;
 }
 
 async function fetchCart() {
-    const res = await fetch("/api/cart");
-    const data = await res.json();
-    // Convert to a lookup object for fast access
-    const cartLookup: Record<string, boolean> = {};
-    data.forEach((item: any) => {
-      cartLookup[item._id] = true;
-    });
-    setCartItems(cartLookup);
-    setAddedItems(cartLookup);
-  }
+  const res = await fetch(`${API}/wp-json/demo-cart/v1/cart`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  
+  const data = await res.json();
+  if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to fetch cart: ${res.status} ${text}`);
+      }
+
+  const cartLookup: Record<string, boolean> = {};
+
+  data.items.forEach((item: any) => {
+    cartLookup[item.product_id] = true;
+  });
+
+  setCartItems(cartLookup);
+  setAddedItems(cartLookup);
+}
 
  useEffect(() => {
   setIndex(0);
@@ -75,18 +101,35 @@ async function fetchCart() {
  
 
 const handleAddToCart = async (listing: any) => {
-  await fetch("/api/cart", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(listing),
-  });
+  try {
+    const res = await fetch(`${API}/wp-json/demo-cart/v1/cart/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // REQUIRED
+      },
+      body: JSON.stringify({
+        product_id: listing.id, // WooCommerce product id
+        quantity: 1,
+      }),
+    });
 
-  setJustAdded((prev) => ({ ...prev, [listing._id]: true }));
+    if (!res.ok) {
+      throw new Error("Failed to add to cart");
+    }
 
-  setTimeout(() => {
-    setJustAdded((prev) => ({ ...prev, [listing._id]: false }));
-    setAddedItems((prev) => ({ ...prev, [listing._id]: true }));
-  }, 2000);
+    const data = await res.json();
+
+    setJustAdded((prev) => ({ ...prev, [listing.id]: true }));
+
+    setTimeout(() => {
+      setJustAdded((prev) => ({ ...prev, [listing.id]: false }));
+      setAddedItems((prev) => ({ ...prev, [listing.id]: true }));
+    }, 2000);
+
+  } catch (error) {
+    console.error("Add to cart error:", error);
+  }
 };
     
 
@@ -98,7 +141,7 @@ useEffect(() => {
       const productsData = await getProducts();
       await fetchCart();
 
-      setProducts(productsData);
+      setProducts(productsData.products);
     } catch (error) {
       console.error("Failed to fetch products or cart:", error);
     } finally {
@@ -151,7 +194,7 @@ const renderSkeleton = () => {
         const showMultiRight = visibleCount === 3 && isLast;
 
   return (
-        <div key={listing._id} className="rounded-lg p-4 flex flex-col h-full">
+        <div key={listing.id} className="rounded-lg p-4 flex flex-col h-full">
           <div className="relative group">
           <img
             src={listing.image}
@@ -202,14 +245,14 @@ const renderSkeleton = () => {
           <p className=" text-gray-800 dark:text-gray-100">{listing.price}</p>
           <p className="text-sm line-clamp-3 text-gray-600 dark:text-gray-100 flex-1">{listing.description}</p>
 
-          {justAdded[listing._id] ? (
+          {justAdded[listing.id] ? (
             <button
               disabled
               className="mt-2 self-start bg-green-600 text-white py-2 px-4 rounded-md cursor-not-allowed"
             >
               Added ✓
             </button>
-          ) : addedItems[listing._id] ? (
+          ) : addedItems[listing.id] ? (
             <button
                onClick={() => onViewCart?.()}
               className="mt-2 self-start text-blue-500 hover:text-blue-600 text-xs underline cursor-pointer"
@@ -278,7 +321,7 @@ const renderSkeleton = () => {
 }`}
 >
       {visibleListings.map((listing) => (
-       <div key={listing._id} className="transition">
+       <div key={listing.id} className="transition">
           <img
             src={listing.image}
             alt={listing.title}
@@ -299,14 +342,14 @@ const renderSkeleton = () => {
             {listing.description}
           </p>
          
-              {justAdded[listing._id] ? (
+              {justAdded[listing.id] ? (
   <button
     disabled
     className="mt-2 bg-green-600 text-white py-2 px-4 rounded-md cursor-not-allowed self-start"
   >
     Added ✓
   </button>
-) : addedItems[listing._id] ? (
+) : addedItems[listing.id] ? (
   <button
     onClick={() => onViewCart?.()}
     className="mt-2 text-xs underline text-blue-600 d hover:text-blue-700 cursor-pointer self-start"

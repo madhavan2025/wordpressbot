@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function PaymentForm({ goBack, goHome }: any) {
+export default function PaymentForm({ goBack, goHome ,orderId}: any) {
   const [card, setCard] = useState({
     cardName: "",
     cardNumber: "",
@@ -10,11 +10,11 @@ export default function PaymentForm({ goBack, goHome }: any) {
   });
   
   const [errors, setErrors] = useState<any>({});
-  const [orderId, setOrderId] = useState<string | null>(null);
-
+  const [localOrderId, setOrderId] = useState<string | null>(null);
+  const token = process.env.NEXT_PUBLIC_WP_TOKEN;
+   const API = process.env.NEXT_PUBLIC_WP_API;
   function handleChange(e: any) {
     const { name, value } = e.target;
-
     let newValue = value;
 
     // ✅ Name: letters and spaces only
@@ -67,27 +67,30 @@ export default function PaymentForm({ goBack, goHome }: any) {
     return Object.keys(newErrors).length === 0;
   }
 
-  function generateOrderId() {
-    return Math.floor(100000000 + Math.random() * 900000000).toString();
-  }
+ 
 
   async function handleSubmit(e: any) {
     e.preventDefault();
        if (!validate()) return;
-    const newOrderId = generateOrderId();
-
-    // ✅ Clear entire cart
-    await fetch("/api/cart", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clear: true }),
+   const res= await fetch(  `${API}/wp-json/demo-cart/v1/payment`, {
+       method: "POST", 
+       headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({order_id:orderId}),
     });
-
-    setOrderId(newOrderId);
-  }
+     const data = await res.json();
+      if (data.success) {
+      // ✅ Show success page
+      setOrderId(data.order_id);
+    
+  }else {
+      alert(data.message || "Payment failed");
+    }}
 
   /* ---------------- SUCCESS SCREEN ---------------- */
-  if (orderId) {
+  if (localOrderId) {
     return (
       <div className="mx-auto w-full max-w-4xl px-2 pb-4 ">
     <div className="relative flex w-full flex-col gap-4">

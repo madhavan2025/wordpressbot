@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 export default function CartComponent({ goBack, goCheckout }: any) {
   const [cart, setCart] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const token = process.env.NEXT_PUBLIC_WP_TOKEN;
+   const API = process.env.NEXT_PUBLIC_WP_API;
   useEffect(() => {
     fetchCart();
   }, []);
@@ -12,9 +13,13 @@ export default function CartComponent({ goBack, goCheckout }: any) {
   async function fetchCart() {
     setLoading(true);
     try {
-      const res = await fetch("/api/cart");
-      const data = await res.json();
-      setCart(data);
+      const res = await fetch(`${API}/wp-json/demo-cart/v1/cart`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+   const data = await res.json();
+      setCart(data.items);
     } catch (error) {
       console.error("Failed to fetch cart:", error);
     } finally {
@@ -22,30 +27,39 @@ export default function CartComponent({ goBack, goCheckout }: any) {
     }
   }
 
-  async function increase(id: string) {
-    await fetch("/api/cart", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ _id: id }),
-    });
+  async function increase(id: number) {
+    await fetch(`${API}/wp-json/demo-cart/v1/cart/increase`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({ key: id })
+});
     fetchCart();
   }
 
-  async function decrease(id: string) {
-    await fetch("/api/cart", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
+  async function decrease(id: number) {
+    await fetch(`${API}/wp-json/demo-cart/v1/cart/decrease`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({ key: id })
+});
     fetchCart();
   }
 
-  async function removeItem(id: string) {
-    await fetch("/api/cart", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, removeAll: true }),
-    });
+  async function removeItem(id: number) {
+    await fetch(`${API}/wp-json/demo-cart/v1/cart/remove`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({ key: id })
+});
     fetchCart();
   }
 
@@ -109,11 +123,11 @@ export default function CartComponent({ goBack, goCheckout }: any) {
             <>
               {cart.map((item) => (
                 <div
-                  key={item._id}
+                  key={item.key}
                   className="flex items-center gap-4 mb-5 relative"
                 >
                   <button
-                    onClick={() => removeItem(item._id)}
+                    onClick={() => removeItem(item.key)}
                     className="absolute cursor-pointer top-0 right-0 text-gray-400 dark:text-gray-300 hover:text-red-500 transition text-lg"
                   >
                     ✕
@@ -135,7 +149,7 @@ export default function CartComponent({ goBack, goCheckout }: any) {
 
                     <div className="flex items-center gap-3 mt-2">
                       <button
-                        onClick={() => decrease(item._id)}
+                        onClick={() => decrease(item.key)}
                         className="px-2 cursor-pointer bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
                         -
@@ -146,7 +160,7 @@ export default function CartComponent({ goBack, goCheckout }: any) {
                       </span>
 
                       <button
-                        onClick={() => increase(item._id)}
+                        onClick={() => increase(item.key)}
                         className="px-2 cursor-pointer bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
                         +

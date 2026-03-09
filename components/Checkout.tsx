@@ -18,37 +18,34 @@ const [loading, setLoading] = useState(true);
     zip: "",
     country: "",
   });
+  const token = process.env.NEXT_PUBLIC_WP_TOKEN;
+   const API = process.env.NEXT_PUBLIC_WP_API;
+    const [orderId, setOrderId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCart();
   }, []);
 
- async function fetchCart() {
-  setLoading(true);
-  try {
-    const res = await fetch("/api/cart");
-    const data = await res.json();
-    setCart(data);
-  } catch (error) {
-    console.error("Failed to fetch cart:", error);
-  } finally {
-    setLoading(false);
+ 
+
+  async function fetchCart() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/wp-json/demo-cart/v1/cart`, {
+  headers: {
+    Authorization: `Bearer ${token}`
   }
-}
+});
+   const data = await res.json();
+      setCart(data.items);
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  const subtotal = cart.reduce((sum, item) => {
-  const rawPrice = item?.price ?? "0";
-  const price =
-    typeof rawPrice === "string"
-      ? Number(rawPrice.replace("$", ""))
-      : Number(rawPrice);
 
-  return sum + price * (item.quantity ?? 1);
-}, 0);
-
-const taxRate = 0.0875;
-const tax = subtotal * taxRate;
-const total = subtotal + tax;
   
   function validateField(name: string, value: string) {
   let error = "";
@@ -101,6 +98,60 @@ const total = subtotal + tax;
   }));
 }
 
+  const subtotal = cart.reduce((sum, item) => {
+  const rawPrice = item?.price ?? "0";
+  const price =
+    typeof rawPrice === "string"
+      ? Number(rawPrice.replace("$", ""))
+      : Number(rawPrice);
+
+  return sum + price * (item.quantity ?? 1);
+}, 0);
+
+const taxRate = 0.0875;
+const tax = subtotal * taxRate;
+const total = subtotal + tax;
+
+async function handleCheckout() {
+  const billing = {
+    first_name: form.firstName,
+    last_name: form.lastName,
+    email: form.email,
+    phone: form.phone,
+    address_1: form.address,
+    city: form.city,
+    state: form.state,
+    postcode: form.zip,
+    country: form.country,
+  };
+
+  const shipping = billing; // same as billing
+
+  try {
+    const res = await fetch(`${API}/wp-json/demo-cart/v1/checkout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ billing, shipping, payment_method: "card" }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      setOrderId(data.order_id);
+
+      // Always go to payment page
+      setStep("payment");
+    } else {
+      alert(data.message || "Checkout failed");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
 const renderOrderSummarySkeleton = () => {
   return (
     <div className="space-y-4 animate-pulse">
@@ -152,7 +203,7 @@ const renderOrderSummarySkeleton = () => {
   setErrors(newErrors);
 
   if (Object.keys(newErrors).length === 0) {
-    setStep("payment");
+    handleCheckout();
   }
 }}
             className="space-y-10"
@@ -376,8 +427,12 @@ const renderOrderSummarySkeleton = () => {
 
         {/* ================= PAYMENT PAGE ================= */}
         {step === "payment" && (
-          <PaymentForm goBack={() => setStep("details")} goHome={goHome} />
-        )}
+  <PaymentForm 
+    goBack={() => setStep("details")} 
+    goHome={goHome} 
+    orderId={orderId} // ✅ pass the orderId
+  />
+)}
       </div>
     </div>
     </div>
