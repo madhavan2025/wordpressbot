@@ -242,7 +242,7 @@ const renderSkeleton = () => {
          
 </div>
           <h4 className="mt-2 font-semibold  text-gray-900 dark:text-gray-100">{listing.title}</h4>
-          <p className=" text-gray-800 dark:text-gray-100">{listing.price}</p>
+          <p className=" text-gray-800 dark:text-gray-100 font-bold">${listing.price}</p>
           <p className="text-sm line-clamp-3 text-gray-600 dark:text-gray-100 flex-1">{listing.description}</p>
 
           {justAdded[listing.id] ? (
@@ -330,7 +330,7 @@ const renderSkeleton = () => {
           />
             <div className="p-4 flex flex-col gap-2">
           <h4 className="text-sm text-gray-900 dark:text-gray-100 font-semibold line-clamp-2 min-h-[40px]">
-            {listing.title}
+            ${listing.title}
           </h4>
 
           {/* Price row aligned equal */}
