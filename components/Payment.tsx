@@ -92,7 +92,7 @@ export default function PaymentForm({ goBack, goHome ,orderId}: any) {
     if (data.success) {
       setOrderId(data.order_id);
     } else {
-      alert(data.message || "Payment failed");
+      console.log(data.message || "Payment failed");
     }
   } catch (err) {
     console.error(err);
