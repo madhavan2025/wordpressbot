@@ -122,10 +122,9 @@ if (isEmbed) return null;
         className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-100"
         style={{
           backgroundColor: chatTheme?.headerBg,
-          color: chatTheme?.headerTextColor,
         }}
       >
-        <span className="font-semibold">Sykalab-AI-ShopAgent</span>
+        <span className="font-semibold text-white">Sykalab-AI-ShopAgent</span>
 
         <div className="flex items-center gap-3">
           {/* Dark Mode Toggle */}
