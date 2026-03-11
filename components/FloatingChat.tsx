@@ -7,6 +7,7 @@ import type { ChatMessage } from "@/lib/types";
 import type { VisibilityType } from "./visibility-selector";
 import { isEmbedMode } from "@/lib/isEmbed";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 
 interface FloatingChatProps {
   chatId: string;
@@ -26,24 +27,25 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
    const [isEmbed, setIsEmbed] = useState(false);
-  const [theme, setTheme] = useState<any>(null);
 const [loadingTheme, setLoadingTheme] = useState(true);
 const [isFullScreen, setIsFullScreen] = useState(false);
-const [isDarkMode, setIsDarkMode] = useState(false);
+const { theme, setTheme, resolvedTheme } = useTheme();
+const [chatTheme, setChatTheme] = useState<any>(null);
+const isDarkMode = resolvedTheme === "dark";
    useEffect(() => {
     setIsEmbed(isEmbedMode());
   }, []);
 
 
 useEffect(() => {
+  if (!resolvedTheme) return;
+
   const loadTheme = async () => {
     try {
-      const themeName = isDarkMode ? "darkTheme" : "default";
-
+      const themeName = resolvedTheme === "dark" ? "darkTheme" : "default";
       const res = await fetch(`/api/chat-theme?theme=${themeName}`);
       const data = await res.json();
-
-      setTheme(data);
+      setChatTheme(data);
     } catch (err) {
       console.error("Theme load failed", err);
     } finally {
@@ -52,7 +54,7 @@ useEffect(() => {
   };
 
   loadTheme();
-}, [isDarkMode]);
+}, [resolvedTheme]);
 
 
 if (loadingTheme) return null;
@@ -61,9 +63,7 @@ if (isEmbed) return null;
 
   return (
     <div
-  className={`fixed bottom-4 right-4 z-[9999] ${
-    isDarkMode ? "dark" : ""
-  }`}
+  className="fixed bottom-4 right-4 z-[9999]"
 >
       {/* Toggle Button */}
       {!isOpen && (
@@ -71,16 +71,16 @@ if (isEmbed) return null;
           onClick={() => setIsOpen(true)}
           className="flex items-center justify-center cursor-pointer"
         >
-  {theme?.chatIcon && (
+  {chatTheme?.chatIcon && (
   <Image
-    src={theme.chatIcon}
+    src={chatTheme.chatIcon}
     alt="Chat"
-    width={theme.chatIconSize}
-    height={theme.chatIconSize}
+    width={chatTheme.chatIconSize}
+    height={chatTheme.chatIconSize}
     unoptimized
     style={{
-      backgroundColor: theme.chatIconBg,
-      borderRadius: theme.borderRadius,
+      backgroundColor: chatTheme.chatIconBg,
+      borderRadius: chatTheme.borderRadius,
       objectFit: "contain",
       
     }}
@@ -112,17 +112,17 @@ if (isEmbed) return null;
     }
   `}
   style={{
-    backgroundColor: theme.windowBg,
-    border: theme.borderColor,
-    boxShadow: theme.shadow,
+    backgroundColor: chatTheme.windowBg,
+    border: chatTheme.borderColor,
+    boxShadow: chatTheme.shadow,
   }}
 >
       {/* HEADER */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-100"
         style={{
-          backgroundColor: theme?.headerBg,
-          color: isDarkMode ? theme?.headerTextColor : "#ffffff",
+          backgroundColor: chatTheme?.headerBg,
+          color: chatTheme?.headerTextColor,
         }}
       >
         <span className="font-semibold">Sykalab-AI-ShopAgent</span>
@@ -130,7 +130,7 @@ if (isEmbed) return null;
         <div className="flex items-center gap-3">
           {/* Dark Mode Toggle */}
 <button
-  onClick={() => setIsDarkMode(!isDarkMode)}
+  onClick={() => setTheme(isDarkMode ? "light" : "dark")}
   className={`hover:opacity-80 cursor-pointer flex items-center justify-center ${
     !isDarkMode ? "text-white" : ""
   }`}
