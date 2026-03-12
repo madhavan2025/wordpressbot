@@ -277,16 +277,13 @@ if (lower.includes("show contents")) {
   />
   
 )}
-
-
-            {showForm && formConfig &&( 
+   {showForm && formConfig &&( 
             
             <MiniForm config={formConfig} />
             )}
      </div>
 </div>
     
-
   {/* Sticky input */}
   {!isReadonly && (
     <div className="sticky bottom-0 bg-white dark:bg-gray-900 mx-auto w-full max-w-4xl px-2 pb-4">
@@ -325,8 +322,6 @@ if (lower.includes("show contents")) {
   stop={stop}
   votes={votes}
 />
-
-
       <AlertDialog
         open={showCreditCardAlert}
         onOpenChange={setShowCreditCardAlert}

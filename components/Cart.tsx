@@ -6,8 +6,6 @@ export default function CartComponent({ goBack, goCheckout }: any) {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
-  const token = process.env.NEXT_PUBLIC_WP_TOKEN;
-   const API = process.env.NEXT_PUBLIC_WP_API;
   useEffect(() => {
     fetchCart();
   }, []);
@@ -15,13 +13,9 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
   async function fetchCart(options?: { skipLoading?: boolean }) {
      if (!options?.skipLoading) setLoading(true);
     try {
-      const res = await fetch(`${API}/wp-json/demo-cart/v1/cart`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+      const res = await fetch("/api/cart");
    const data = await res.json();
-      setCart(data.items);
+      setCart(data);
     } catch (error) {
       console.error("Failed to fetch cart:", error);
     } finally {
@@ -31,13 +25,12 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
 
   async function increase(id: number) {
      setItemLoading((prev) => ({ ...prev, [id]: true }));
-    await fetch(`${API}/wp-json/demo-cart/v1/cart/increase`, {
+    await fetch("/api/cart", {
   method: "POST",
   headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
+    "Content-Type": "application/json"
   },
-  body: JSON.stringify({ key: id })
+  body: JSON.stringify({ _id: id  })
 });
     await fetchCart({ skipLoading: true });
     setItemLoading((prev) => ({ ...prev, [id]: false }));
@@ -45,13 +38,12 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
 
   async function decrease(id: number) {
      setItemLoading((prev) => ({ ...prev, [id]: true }));
-    await fetch(`${API}/wp-json/demo-cart/v1/cart/decrease`, {
-  method: "POST",
+    await fetch("/api/cart", {
+  method: "DELETE",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
   },
-  body: JSON.stringify({ key: id })
+  body: JSON.stringify({ id })
 });
     await fetchCart({ skipLoading: true });
     setItemLoading((prev) => ({ ...prev, [id]: false }));
@@ -59,13 +51,12 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
 
   async function removeItem(id: number) {
      setItemLoading((prev) => ({ ...prev, [id]: true }));
-    await fetch(`${API}/wp-json/demo-cart/v1/cart/remove`, {
-  method: "POST",
+    await fetch("/api/cart", {
+  method: "DELETE",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
   },
-  body: JSON.stringify({ key: id })
+  body: JSON.stringify({ id, removeAll: true })
 });
    await fetchCart({ skipLoading: true });
    setItemLoading((prev) => ({ ...prev, [id]: false }));
@@ -147,8 +138,8 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
           ) : (
             <>
               {cart.map((item) => (
-                <div key={item.key}>
-    {itemLoading[item.key] ? (
+                <div key={item._id}>
+    {itemLoading[item._id] ? (
       renderItemSkeleton()
     ) : (
 
@@ -156,7 +147,7 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
                   className="flex items-center gap-4 mb-5 relative"
                 >
                   <button
-                    onClick={() => removeItem(item.key)}
+                    onClick={() => removeItem(item._id)}
                     className="absolute cursor-pointer top-0 right-0 text-gray-400 dark:text-gray-300 hover:text-red-500 transition text-lg"
                   >
                     ✕
@@ -178,7 +169,8 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
 
                     <div className="flex items-center gap-3 mt-2">
                       <button
-                        onClick={() => decrease(item.key)}
+                        onClick={() => decrease(item._id
+                        )}
                         className="px-2 cursor-pointer bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
                         -
@@ -189,7 +181,7 @@ const [itemLoading, setItemLoading] = useState<Record<number, boolean>>({});
                       </span>
 
                       <button
-                        onClick={() => increase(item.key)}
+                        onClick={() => increase(item._id)}
                         className="px-2 cursor-pointer bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
                       >
                         +

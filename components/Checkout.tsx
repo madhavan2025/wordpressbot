@@ -32,13 +32,9 @@ const [loading, setLoading] = useState(true);
   async function fetchCart() {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/wp-json/demo-cart/v1/cart`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+      const res = await fetch("/api/cart");
    const data = await res.json();
-      setCart(data.items);
+      setCart(data);
     } catch (error) {
       console.error("Failed to fetch cart:", error);
     } finally {
@@ -130,13 +126,18 @@ async function handleCheckout() {
   const shipping = billing; // same as billing
 
   try {
-    const res = await fetch(`${API}/wp-json/demo-cart/v1/checkout`, {
+    const res = await fetch(`${API}/wp-json/wc/v3/checkout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ billing, shipping, payment_method: "card" }),
+      body: JSON.stringify({
+         billing, 
+         shipping,
+          payment_method: "card",
+          items:cart
+         }),
     });
 
     const data = await res.json();

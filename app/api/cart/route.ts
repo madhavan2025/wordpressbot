@@ -39,9 +39,12 @@ export async function POST(req: Request) {
         { $inc: { quantity: 1 } }
       );
     } else {
-      // Insert full product + quantity
-      await db.collection("cart").insertOne({
-        ...product,
+     await db.collection("cart").insertOne({
+        _id: product._id,
+        wooId: product._id,
+        title: product.title,
+        price: product.price,
+        image: product.image,
         quantity: 1,
       });
     }

@@ -78,7 +78,7 @@ export default function PaymentForm({ goBack, goHome ,orderId}: any) {
   setPaymentLoading(true);
 
   try {
-    const res = await fetch(`${API}/wp-json/demo-cart/v1/payment`, {
+    const res = await fetch(`${API}/wp-json/wc/v3/payment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

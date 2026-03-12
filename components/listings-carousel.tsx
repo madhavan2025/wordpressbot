@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Listing = {
-  id:number;
+  _id:number;
   title: string;
   price: string;
   image: string;
@@ -31,8 +31,6 @@ export function ListingsCarousel({
   const [loading, setLoading] = useState(true);
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
    const isMobile = (parentWidth ?? 1024) < 640;
-    const token = process.env.NEXT_PUBLIC_WP_TOKEN;
-   const API = process.env.NEXT_PUBLIC_WP_API;
    const visibleCount = (() => {
   // MOBILE ALWAYS 1
   if (isMobile) return 1;
@@ -54,12 +52,7 @@ export function ListingsCarousel({
 
 
   async function getProducts() {
-  const res = await fetch(`${API}/wp-json/wp/v2/product`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-       "Content-Type": "application/json",
-    },
-  });
+  const res = await fetch("/api/products");
 
   if (!res.ok) {
      console.error(await res.text());
@@ -71,24 +64,19 @@ export function ListingsCarousel({
 }
 
 async function fetchCart() {
-  const res = await fetch(`${API}/wp-json/demo-cart/v1/cart`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });
+  const res = await fetch("/api/cart");
 
-  
-  const data = await res.json();
   if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to fetch cart: ${res.status} ${text}`);
-      }
+    const text = await res.text();
+    throw new Error(`Failed to fetch cart: ${res.status} ${text}`);
+  }
+
+  const data = await res.json(); // this is already an array
 
   const cartLookup: Record<string, boolean> = {};
 
-  data.items.forEach((item: any) => {
-    cartLookup[item.product_id] = true;
+  data.forEach((item: any) => {
+    cartLookup[item._id] = true;
   });
 
   setCartItems(cartLookup);
@@ -103,17 +91,11 @@ async function fetchCart() {
 
 const handleAddToCart = async (listing: any) => {
   try {
-    setLoadingItems((prev) => ({ ...prev, [listing.id]: true }));
-    const res = await fetch(`${API}/wp-json/demo-cart/v1/cart/add`, {
+    setLoadingItems((prev) => ({ ...prev, [listing._id]: true }));
+    const res = await fetch("/api/cart", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // REQUIRED
-      },
-      body: JSON.stringify({
-        product_id: listing.id, // WooCommerce product id
-        quantity: 1,
-      }),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(listing),
     });
 
     if (!res.ok) {
@@ -121,20 +103,20 @@ const handleAddToCart = async (listing: any) => {
     }
 
      await res.json();
-     setLoadingItems((prev) => ({ ...prev, [listing.id]: false }));
+     setLoadingItems((prev) => ({ ...prev, [listing._id]: false }));
     
      
-      setJustAdded((prev) => ({ ...prev, [listing.id]: true }));
+      setJustAdded((prev) => ({ ...prev, [listing._id]: true }));
 
       setTimeout(() => {
-        setJustAdded((prev) => ({ ...prev, [listing.id]: false }));
-        setAddedItems((prev) => ({ ...prev, [listing.id]: true }));
+        setJustAdded((prev) => ({ ...prev, [listing._id]: false }));
+        setAddedItems((prev) => ({ ...prev, [listing._id]: true }));
       }, 1000);
    
 
   } catch (error) {
     console.error("Add to cart error:", error);
-    setLoadingItems((prev) => ({ ...prev, [listing.id]: false }));
+    setLoadingItems((prev) => ({ ...prev, [listing._id]: false }));
 
   } 
 };
@@ -148,7 +130,7 @@ useEffect(() => {
       const productsData = await getProducts();
       await fetchCart();
 
-      setProducts(productsData.products);
+      setProducts(productsData);
     } catch (error) {
       console.error("Failed to fetch products or cart:", error);
     } finally {
@@ -201,7 +183,7 @@ const renderSkeleton = () => {
         const showMultiRight = visibleCount === 3 && isLast;
 
   return (
-        <div key={listing.id} className="rounded-lg p-4 flex flex-col h-full">
+        <div key={listing._id} className="rounded-lg p-4 flex flex-col h-full">
           <div className="relative group">
           <img
             src={listing.image}
@@ -252,7 +234,7 @@ const renderSkeleton = () => {
           <p className=" text-gray-800 dark:text-gray-100 font-bold">${listing.price}</p>
           <p className="text-sm line-clamp-3 text-gray-600 dark:text-gray-100 ">{listing.description}</p>
           <div className="mt-auto pt-2">
-          {loadingItems[listing.id] ? (
+          {loadingItems[listing._id] ? (
   <button
     disabled
     className="mt-2 self-start bg-gray-400 text-white py-2 px-4 rounded-md cursor-not-allowed"
@@ -260,7 +242,7 @@ const renderSkeleton = () => {
     Adding...
   </button>
 
-) : justAdded[listing.id] ? (
+) : justAdded[listing._id] ? (
   <button
     disabled
     className="mt-2 self-start bg-green-600 text-white py-2 px-4 rounded-md cursor-not-allowed"
@@ -268,7 +250,7 @@ const renderSkeleton = () => {
     Added ✓
   </button>
 
-) : addedItems[listing.id] ? (
+) : addedItems[listing._id] ? (
   <button
     onClick={() => onViewCart?.()}
     className="mt-2 self-start text-blue-500 hover:text-blue-600 text-xs underline cursor-pointer"
@@ -339,7 +321,7 @@ const renderSkeleton = () => {
 }`}
 >
       {visibleListings.map((listing) => (
-      <div key={listing.id} className="transition h-full flex flex-col">
+      <div key={listing._id} className="transition h-full flex flex-col">
           <img
             src={listing.image}
             alt={listing.title}
@@ -360,7 +342,7 @@ const renderSkeleton = () => {
             {listing.description}
           </p>
            <div className="mt-auto pt-2">
-           {loadingItems[listing.id] ? (
+           {loadingItems[listing._id] ? (
   <button
     disabled
     className="mt-2 self-start bg-gray-400 text-white py-2 px-4 rounded-md cursor-not-allowed"
@@ -368,7 +350,7 @@ const renderSkeleton = () => {
     Adding...
   </button>
 
-) : justAdded[listing.id] ? (
+) : justAdded[listing._id] ? (
   <button
     disabled
     className="mt-2 self-start bg-green-600 text-white py-2 px-4 rounded-md cursor-not-allowed"
@@ -376,7 +358,7 @@ const renderSkeleton = () => {
     Added ✓
   </button>
 
-) : addedItems[listing.id] ? (
+) : addedItems[listing._id] ? (
   <button
     onClick={() => onViewCart?.()}
     className="mt-2 self-start text-blue-500 hover:text-blue-600 text-xs underline cursor-pointer"

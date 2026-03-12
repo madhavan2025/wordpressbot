@@ -29,7 +29,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
    const [isEmbed, setIsEmbed] = useState(false);
 const [loadingTheme, setLoadingTheme] = useState(true);
 const [isFullScreen, setIsFullScreen] = useState(false);
-const { theme, setTheme, resolvedTheme } = useTheme();
+const { setTheme, resolvedTheme } = useTheme();
 const [chatTheme, setChatTheme] = useState<any>(null);
 const isDarkMode = resolvedTheme === "dark";
    useEffect(() => {
