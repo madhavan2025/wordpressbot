@@ -91,6 +91,13 @@ export default function PaymentForm({ goBack, goHome ,orderId}: any) {
 
     if (data.success) {
       setOrderId(data.order_id);
+      await fetch("/api/cart", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ clear: true }),
+      });
     } else {
       console.log(data.message || "Payment failed");
     }
