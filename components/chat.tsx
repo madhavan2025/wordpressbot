@@ -23,6 +23,7 @@ import { Artifact } from "./artifact";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 
+
 async function getForm(id: string) {
   const res = await fetch(`/api/forms/${id}`);
   if (!res.ok) throw new Error("Failed to fetch form");
@@ -156,6 +157,9 @@ useEffect(() => {
   setShowListings(false);
   setShowContentList(false);
   setShowForm(false);
+  setShowCart(false);
+  setShowCheckout(false);
+ 
 };
  if (lower.includes("show products type1")) {
    resetAllViews();
@@ -268,6 +272,7 @@ if (lower.includes("show contents")) {
     />
   
 )}
+
 
 {showContentList && (
    
